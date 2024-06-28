@@ -8,7 +8,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv, dotenv_values  # we can use load_dotenv or dotenv_values both perform the same task
 
 load_dotenv()
-*.toml
+
 # print(os.getenv("MY_SECRET_KEY"))
 MY_SECRET_KEY = st.secrets['MY_SECRET_KEY']
 genai.configure(api_key=MY_SECRET_KEY)
