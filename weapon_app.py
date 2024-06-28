@@ -11,7 +11,7 @@ load_dotenv()
 
 # print(os.getenv("MY_SECRET_KEY"))
 
-genai.configure(api_key=os.getenv("AIzaSyA-xy-edSTVWLHVOSwZArwRLounDnB40ZQ"))
+genai.configure(api_key=os.getenv("MY_SECRET_KEY"))
 
 # Set up the model
 generation_config = {
