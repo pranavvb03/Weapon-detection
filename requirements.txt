@@ -1,2 +1,4 @@
-google-generativeai
-python-dotenv
+numpy
+opencv-python
+imutils
+streamlit
