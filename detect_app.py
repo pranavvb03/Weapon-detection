@@ -20,7 +20,7 @@ def app():
         file_binary = uploaded_file.read()
         with open(input_path, "wb") as temp_file:
             temp_file.write(file_binary)
-        video_stream = cv2.VideoCapture('video.mp4')
+        video_stream = cv2.VideoCapture('Testvideo_1.mp4')
         width = int(video_stream.get(cv2.CAP_PROP_FRAME_WIDTH)) 
         height = int(video_stream.get(cv2.CAP_PROP_FRAME_HEIGHT)) 
         fourcc = cv2.VideoWriter_fourcc(*'h264') 
