@@ -6,7 +6,7 @@ def app():
     st.header('Object Detection using Streamlit')
     st.subheader('Powered by YOLOv8')
     st.write('Welcome!')
-    model = YOLO('yolov8n.pt')
+    model = YOLO('yolov8s.pt')
     object_names = list(model.names.values())
 
     with st.form("my_form"):
@@ -20,7 +20,10 @@ def app():
         file_binary = uploaded_file.read()
         with open(input_path, "wb") as temp_file:
             temp_file.write(file_binary)
-        video_stream = cv2.VideoCapture('Testvideo_1.mp4')
+        video_stream = cv2.VideoCapture(input_path)
+        if not video_stream.isOpened():
+            st.error(f"Error opening video file: {input_path}")
+            return
         width = int(video_stream.get(cv2.CAP_PROP_FRAME_WIDTH)) 
         height = int(video_stream.get(cv2.CAP_PROP_FRAME_HEIGHT)) 
         fourcc = cv2.VideoWriter_fourcc(*'h264') 
