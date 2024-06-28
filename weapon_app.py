@@ -6,7 +6,7 @@ import os
 import google.generativeai as genai
 
 from dotenv import load_dotenv, dotenv_values  # we can use load_dotenv or dotenv_values both perform the same task
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'https://console.cloud.google.com/apis/credentials?project=superb-vigil-423217-c0.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'superb-vigil-423217-c0-23c693897695.json'
 load_dotenv()
 
 # print(os.getenv("MY_SECRET_KEY"))
