@@ -10,7 +10,7 @@ from dotenv import load_dotenv, dotenv_values  # we can use load_dotenv or doten
 load_dotenv()
 
 # print(os.getenv("MY_SECRET_KEY"))
-
+MY_SECRET_KEY = st.secrets['MY_SECRET_KEY']
 genai.configure(api_key=os.getenv("MY_SECRET_KEY"))
 
 # Set up the model
