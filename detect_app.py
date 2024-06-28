@@ -1,89 +1,60 @@
-import numpy as np
 import cv2
-import imutils
-import datetime
-import base64
 import streamlit as st
+from ultralytics import YOLO
 
+def app():
+    st.header('Object Detection using Streamlit')
+    st.subheader('Powered by YOLOv8')
+    st.write('Welcome!')
+    model = YOLO('yolov8n.pt')
+    object_names = list(model.names.values())
 
-gun_cascade = cv2.CascadeClassifier('cascade.xml')  # Assuming your weapon classifier is loaded
+    with st.form("my_form"):
+        uploaded_file = st.file_uploader("Upload a video", type=['mp4'])
+        selected_objects = st.multiselect('Choose objects to detect', object_names, default=['person']) 
+        min_confidence = st.slider('Confidence score', 0.0, 1.0)
+        st.form_submit_button(label='Submit')
+            
+    if uploaded_file is not None: 
+        input_path = uploaded_file.name
+        file_binary = uploaded_file.read()
+        with open(input_path, "wb") as temp_file:
+            temp_file.write(file_binary)
+        video_stream = cv2.VideoCapture('video.mp4')
+        width = int(video_stream.get(cv2.CAP_PROP_FRAME_WIDTH)) 
+        height = int(video_stream.get(cv2.CAP_PROP_FRAME_HEIGHT)) 
+        fourcc = cv2.VideoWriter_fourcc(*'h264') 
+        fps = int(video_stream.get(cv2.CAP_PROP_FPS)) 
+        output_path = input_path.split('.')[0] + '_output.mp4' 
+        out_video = cv2.VideoWriter(output_path, int(fourcc), fps, (width, height)) 
 
+        with st.spinner('Processing video...'): 
+            while True:
+                ret, frame = video_stream.read()
+                if not ret:
+                    break
+                result = model(frame)
+                for detection in result[0].boxes.data:
+                    x0, y0 = (int(detection[0]), int(detection[1]))
+                    x1, y1 = (int(detection[2]), int(detection[3]))
+                    score = round(float(detection[4]), 2)
+                    cls = int(detection[5])
+                    object_name =  model.names[cls]
+                    label = f'{object_name} {score}'
 
-def detect_weapons(frame):
-  """Detects weapons in a frame and returns the frame with bounding boxes (optional)."""
-  gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-  guns = gun_cascade.detectMultiScale(gray, 1.3, 20, minSize=(100, 100))
-  weapon_detected = False  # Flag to track weapon detection
-
-  for (x, y, w, h) in guns:
-    weapon_detected = True  # Set flag if weapon is found
-    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-    cv2.putText(frame, 'Firearm detected!', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX,
-                0.75, (0, 255, 255), 2, cv2.LINE_AA)
-
-  # Return the frame and the weapon detection flag
-  return frame, weapon_detected
-
-
-def video_generator():
-  """Generator to yield processed video frames."""
-  cap = cv2.VideoCapture(0)
-  while True:
-    ret, frame = cap.read()
-    if not ret:
-      break
-    # Adjust frame size (optional)
-    frame = imutils.resize(frame, width=500)  # Adjust width as desired
-    frame, weapon_detected = detect_weapons(frame.copy())
-    yield frame, weapon_detected
-  cap.release()
-  cv2.destroyAllWindows()
-
-
-def get_text_color(weapon_detected, start_color, end_color):
-  """Returns text color based on weapon detection and background gradient."""
-  if weapon_detected:
-    # Choose a contrasting color for detected weapon (e.g., white)
-    return (255, 255, 255)
-  else:
-    # Choose a color within the gradient range (adjust based on your gradient)
-    return (0, 128, 128)  # Example: Midpoint between red and green in your gradient
-
-
-def main():
-  """Streamlit application for real-time weapon detection video with gradient background."""
-  st.title("Weapon Detection Video Stream")
-
-  # Define background gradient colors
-  start_color = (255, 0, 0)  # Red
-  end_color = (0, 255, 0)  # Green
-
-  # Generate background image with gradient (omitted for brevity)
-
-  # Display video with gradient background (omitted for brevity)
-
-  # **Define video width**
-  width = 500  # Adjust width as desired
-
-  # Create separate containers for video and text
-  video_container = st.empty()
-  text_container = st.empty()
-
-  # Use video_generator to get frames
-  frames = video_generator()
-  for frame, weapon_detected in frames:
-      frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Convert to RGB for Streamlit
-
-      # Display video in video container
-      video_container.image(frame, width=width)
-
-      # Get text color based on weapon detection and gradient
-      text_color = get_text_color(weapon_detected, start_color, end_color)
-
-      # Display text message in text container with color and positioning
-      text_container.markdown(f"<h3 style='color: rgb({text_color[0]}, {text_color[1]}, {text_color[2]}); text-align: center;'>{'Firearm detected!' if weapon_detected else ''}</h3>", unsafe_allow_html=True)
-
-      # Clear previous text (omitted for brevity)
+                    if model.names[cls] in selected_objects and score > min_confidence:
+                        cv2.rectangle(frame, (x0, y0), (x1, y1), (255, 0, 0), 2)
+                        cv2.putText(frame, label, (x0, y0 - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                
+                detections = result[0].verbose()
+                cv2.putText(frame, detections, (10, 10),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  
+                out_video.write(frame) 
+            video_stream.release()
+            out_video.release()
+        st.video(output_path)
 
 if __name__ == "__main__":
-  main()
+    app()
