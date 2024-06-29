@@ -6,7 +6,7 @@ def app():
     st.header('Object Detection using Streamlit')
     st.subheader('Powered by YOLOv8')
     st.write('Welcome!')
-    model = YOLO('yolov8s.pt')
+    model = YOLO('best_f.pt')
     object_names = list(model.names.values())
 
     with st.form("my_form"):
