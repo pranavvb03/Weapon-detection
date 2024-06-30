@@ -2,7 +2,7 @@ import cv2
 import streamlit as st
 from ultralytics import YOLO
 import numpy as np
-from PIL import Image
+from PIL import Image,ImageFilter
 import io
 
 def app():
@@ -13,7 +13,8 @@ def app():
     object_names = list(model.names.values())
     def blur_region(image, x0, y0, x1, y1):
         ROI = image[y0, x0]
-        blur = cv2.GaussianBlur(ROI, (51, 51), 0) # Apply Gaussian Blur
+        blur =  ROI.filter(ImageFilter.GaussianBlur(radius=15))
+        # blur = cv2.GaussianBlur(ROI, (15,15), 0) Apply Gaussian Blur 
         image[y0, x0] = blur
         return image
         
