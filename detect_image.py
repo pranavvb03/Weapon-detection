@@ -12,7 +12,6 @@ def app():
     model = YOLO("yolov8s.pt")  # or select yolov8m/l-world.pt
     object_names = list(model.names.values())
     def blur_region(image, x0, y0, x1, y1):
-"""Blur a specific region of the image."""
         ROI = image[y0, x0]
         blur = cv2.GaussianBlur(ROI, (51, 51), 0) # Apply Gaussian Blur
         image[y0, x0] = blur
