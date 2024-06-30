@@ -28,23 +28,23 @@ def app():
 
         with st.spinner('Processing image...'):
             result = model(input_image)
-            for detection in result[0].boxes.data:
-                x0, y0 = (int(detection[0]), int(detection[1]))
-                x1, y1 = (int(detection[2]), int(detection[3]))
-                score = round(float(detection[4]), 2)
-                cls = int(detection[5])
-                object_name = model.names[cls]
-                label = f'{object_name} {score}'
+            detections = []
 
-                if model.names[cls] in selected_objects and score > min_confidence:
-                    cv2.rectangle(input_image, (x0, y0), (x1, y1), (255, 0, 0), 2)
-                    cv2.putText(input_image, label, (x0, y0 - 10),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+        for detection in result[0].boxes.data:
+            x0, y0 = (int(detection[0]), int(detection[1]))
+            x1, y1 = (int(detection[2]), int(detection[3]))
+            score = round(float(detection[4]), 2)
+            cls = int(detection[5])
+            object_name = model.names[cls]
+            label = f'{object_name} {score}'
 
-            detections = result[0].verbose()
-            cv2.putText(input_image, detections, (10, 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-
+            if object_name in selected_objects and score > min_confidence:
+                cv2.rectangle(input_image, (x0, y0), (x1, y1), (255, 0, 0), 2)
+                cv2.putText(input_image, label, (x0, y0 - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                detections.append((x0, y0, x1, y1, label))
+                
+        input_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2RGB)
         st.image(input_image, caption='Processed Image', use_column_width=True)
         if detections:
             st.write("Detected regions:")
