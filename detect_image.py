@@ -16,6 +16,7 @@ def app():
         blur = cv2.GaussianBlur(ROI, (51, 51), 0) # Apply Gaussian Blur
         image[y0, x0] = blur
         return image
+        
     with st.form("my_form"):
         uploaded_file = st.file_uploader("Upload an image", type=['jpg', 'jpeg', 'png'])
         selected_objects = st.multiselect('Choose objects to detect', object_names, default=['person']) 
@@ -50,7 +51,7 @@ def app():
             for i, (x0, y0, x1, y1, label) in enumerate(detections):
                 if st.button(f"Blur {label}", key=f"blur_{i}"):
                     original_image = blur_region(original_image, x0, y0, x1, y1)
-                    st.image(original_image, caption='Blurred Image', use_column_width=True)
+        st.image(original_image, caption='Blurred Image', use_column_width=True)
 
 if __name__ == "__main__":
     app()
