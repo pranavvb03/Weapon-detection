@@ -4,3 +4,9 @@ ultralytics
 streamlit
 Pillow
 imageio
+ftfy
+packaging
+regex
+tqdm
+torch
+torchvision
