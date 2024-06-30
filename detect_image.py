@@ -9,7 +9,11 @@ def app():
     st.header('Object Detection using Streamlit')
     st.subheader('Powered by YOLOv8')
     st.write('Welcome!')
-    model = YOLO('best_f.pt')
+    model = YOLO("yolov8s-world.pt")  # or select yolov8m/l-world.pt
+
+# Define custom classes
+    model.set_classes(["gun","person"])
+
     object_names = list(model.names.values())
 
     with st.form("my_form"):
@@ -22,7 +26,7 @@ def app():
         input_image = np.array(Image.open(uploaded_file))
 
         with st.spinner('Processing image...'):
-            result = model(input_image)
+            result = model.predict(input_image)
             for detection in result[0].boxes.data:
                 x0, y0 = (int(detection[0]), int(detection[1]))
                 x1, y1 = (int(detection[2]), int(detection[3]))
