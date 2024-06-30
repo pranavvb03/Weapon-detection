@@ -44,7 +44,6 @@ def app():
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
                 detections.append((x0, y0, x1, y1, label))
                 
-        input_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2RGB)
         st.image(input_image, caption='Processed Image', use_column_width=True)
         if detections:
             st.write("Detected regions:")
