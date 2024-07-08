@@ -1,63 +1,68 @@
 import cv2
 import streamlit as st
 from ultralytics import YOLO
-
+import os
+import supervision as sv
+import st_pages
 def app():
-    st.header('Object Detection using Streamlit')
-    st.subheader('Powered by YOLOv8')
-    st.write('Welcome!')
-    model = YOLO('best_f.pt')
-    object_names = list(model.names.values())
+    
+    model_path = 'yolov8sbest.pt'
 
-    with st.form("my_form"):
-        uploaded_file = st.file_uploader("Upload a video", type=['mp4'])
-        selected_objects = st.multiselect('Choose objects to detect', object_names, default=['person']) 
-        min_confidence = st.slider('Confidence score', 0.0, 1.0)
-        st.form_submit_button(label='Submit')
-            
-    if uploaded_file is not None: 
-        input_path = uploaded_file.name
-        file_binary = uploaded_file.read()
-        with open(input_path, "wb") as temp_file:
-            temp_file.write(file_binary)
-        video_stream = cv2.VideoCapture(input_path)
-        if not video_stream.isOpened():
-            st.error(f"Error opening video file: {input_path}")
-            return
-        width = int(video_stream.get(cv2.CAP_PROP_FRAME_WIDTH)) 
-        height = int(video_stream.get(cv2.CAP_PROP_FRAME_HEIGHT)) 
-        fourcc = cv2.VideoWriter_fourcc(*'h264') 
-        fps = int(video_stream.get(cv2.CAP_PROP_FPS)) 
-        output_path = input_path.split('.')[0] + '_output.mp4' 
-        out_video = cv2.VideoWriter(output_path, int(fourcc), fps, (width, height)) 
+    cams = 0
+    # the number of cams
 
-        with st.spinner('Processing video...'): 
-            while True:
-                ret, frame = video_stream.read()
-                if not ret:
-                    break
-                result = model(frame)
-                for detection in result[0].boxes.data:
-                    x0, y0 = (int(detection[0]), int(detection[1]))
-                    x1, y1 = (int(detection[2]), int(detection[3]))
-                    score = round(float(detection[4]), 2)
-                    cls = int(detection[5])
-                    object_name =  model.names[cls]
-                    label = f'{object_name} {score}'
+    # counts the number of cameras connected to the system using some estimate 'n' by trying to open cameras
+    for i in range(10):
+        cam = cv2.VideoCapture(i, cv2.CAP_DSHOW)
+        if cam.isOpened():
+            cams += 1
+            cam.release()
+        else:
+            break
 
-                    if model.names[cls] in selected_objects and score > min_confidence:
-                        cv2.rectangle(frame, (x0, y0), (x1, y1), (255, 0, 0), 2)
-                        cv2.putText(frame, label, (x0, y0 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-                
-                detections = result[0].verbose()
-                cv2.putText(frame, detections, (10, 10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  
-                out_video.write(frame) 
-            video_stream.release()
-            out_video.release()
-        st.video(output_path)
+    root_dir = os.getcwd()
+# the root directory for use
+
+# creating captures directory
+    cap_dir = f"{root_dir}\\CAPTURES"
+    try:
+        os.mkdir(cap_dir)
+    except:
+        pass
+
+# create the image directories corresponding to each camera
+    for i in range(cams):
+        try:
+            cam_dir = f"{cap_dir}\\CAMERA{i+1}"
+            os.mkdir(cam_dir)
+        except:
+            pass
+
+# some front end beautification, not much!
+    st.title("Security Surviellence")
+    st.subheader("automatically capture real time footage from all connected cameras to the system and monitor them for threats.")
+    st.sidebar.text(f"available cameras in the system: {cams}")
+
+    st.sidebar.write("---")
+    st.sidebar.info("To access the security footage, click on the corresponding icons in the upper part of the sidebar.")
+    st.sidebar.write("---")
+
+    page_list = [st_pages.Page("app.py", "HomePage", "👁️")]
+    # inital page list for sidebar
+    pages_from_cams = [st_pages.Page(f"{root_dir}\\pages\\camera{i}.py", f"Camera Feed {i+1}", "📹", in_section=True) for i in range(cams)]
+    page_list.extend(pages_from_cams)
+
+
+    st_pages.show_pages(page_list)
+
+
+    num = 0
+    for i in range(cams):
+        files = os.listdir(f"{cap_dir}\\CAMERA{i+1}")
+        num += len(files)
+# counts number of images
+
+    st.metric(label="captured instances", value=num, delta=num, delta_color='inverse')
 
 if __name__ == "__main__":
     app()
