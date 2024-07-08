@@ -1,4 +1,3 @@
-numpy
 opencv-python-headless
 ultralytics
 streamlit
@@ -10,3 +9,5 @@ regex
 tqdm
 torch
 torchvision
+st_pages
+supervision
